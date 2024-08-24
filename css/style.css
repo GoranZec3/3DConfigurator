@@ -1,0 +1,536 @@
+/* html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; 
+    height: 100%; 
+    width: 100%;  
+}
+
+#canvas {
+    display: block; 
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100vw; 
+    height: 100vh; 
+    z-index: 0; 
+}
+
+button {
+    position: absolute;
+    top: 20px; 
+    margin: 5px;
+    z-index: 1; 
+    background-color: #007bff; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+}
+
+#changeColorButton {
+    left: 10px; 
+}
+
+#button1 {
+    left: 150px; 
+}
+
+#button2 {
+    left: 250px; 
+}
+
+#button3 {
+    left: 350px; 
+}
+
+#button4 {
+    left: 450px; 
+} */
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Manrope", sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    background: #fff;
+  }
+  
+  .container {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100dvh;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  
+  .upper-btns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 32px;
+    position: absolute;
+    z-index: 4;
+  }
+  
+  .upper-btns > div {
+    display: flex;
+    justify-content: center;
+    background: #fff;
+    background: rgba(255, 255, 255, 0.48);
+    backdrop-filter: blur(8px);
+  }
+  .upper-btns .configurator {
+    border-radius: 8px 0 0 8px;
+    width: 300px;
+  }
+  .upper-btns .animations {
+    border-radius: 0 8px 8px 0;
+    width: 300px;
+  }
+  .configurator {
+    padding-left: 40px;
+  }
+  .configurator-btn{
+    border-radius: 8px 0 0 8px;
+  }
+  .animations-btn{
+    border-radius:  0 8px 8px 0;
+  }
+  .configurator-btn, .animations-btn{
+    padding: 0 25px;
+  }
+  .animations {
+    padding-right: 40px;
+  }
+  
+  .upper-btns button {
+    color: #121010;
+    background: #acdddb94 !important;
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.44px;
+    text-transform: uppercase;
+    border: none;
+    height: 64px;
+    background: none;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .configurator-btn.active::before,
+  .animations-btn.active::before {
+    content: "";
+    width: 90%;
+    position: absolute;
+    bottom: 6px;
+    left: 9px;
+    right: 0;
+    height: 1.5px;
+    background-color: black;
+  }
+  #loading-overlay {
+    position: fixed;
+    gap: 20px;
+
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Ensure it covers everything */
+    color: white;
+    font-family: "Manrope", sans-serif;
+}
+
+.spinner {
+  border: 4px solid #acdddb;
+  border-top: 4px solid #312c2c;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+#loading-overlay p {
+  margin-bottom: 30px;
+  font-size: 20px;
+  text-shadow: 1px 1px 1px rgb(0 0 0);
+  color: #acdddb;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+  
+ canvas {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    transition: margin-right 1s ease;
+    transition: height 1s ease;
+    transition: margin-top 1s ease;
+  }
+  .lower-btns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: -85px;
+    z-index: 1;
+  }
+  
+  .lower-btns label {
+    margin: 0 10px;
+    color: #121010;
+    background-color: #acdddb94 !important; 
+    font-family: "Manrope", sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: white;
+    padding: 8px 24px 8px 16px;
+    border-radius: 8px;
+    font-weight: 400;
+    line-height: 20px; 
+    letter-spacing: 0.32px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent; 
+    transition: border-color 0.3s ease;
+  
+  }
+  
+  .lower-btns input[type="radio"] {
+    display: none;
+  }
+  
+  .lower-btns input[type="radio"] + label::before {
+    content: "";
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid #000;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  
+  .lower-btns input[type="radio"]:checked + label::before {
+    background-color: #000;
+    border: 2px solid #121010;
+  }
+  .lower-btns input[type="radio"]:checked + label {
+    border: 1px solid #121010;
+  }
+  
+  #color-picker {
+    position: absolute;
+    right: 10px;
+    background: #acdddb !important;
+    top: 105px;
+    display: flex;
+    justify-content: space-between !important;
+    font-family: "Manrope", sans-serif;
+    width: 280px;
+    height: 515px;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f9f9;
+  
+    border-radius: 8px;
+    display: none;
+  
+    z-index: 3;
+  }
+  
+  .color-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 35px;
+    row-gap: 15px;
+    width: 100%;
+  }
+  .color-option {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+  .color-option:hover {
+    border-color: #000;
+  }
+  .color-option.selected {
+    border-color: #000;
+  }
+  
+  .title-x {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    height: 50px;
+  }
+  .title-x .title {
+    color: #121010;
+    font-family: "Manrope", sans-serif;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px; 
+    text-transform: uppercase;
+  }
+  .select-color {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    height: 40px;
+  }
+  .select-color-title {
+    color: #000;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+  .color-chosen {
+    color: #000;
+    text-align: right;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-transform: uppercase;
+  }
+  .no-image-text {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    height: 30px;
+    margin-top: 30px;
+  }
+  
+  .no-image {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    height: 40px;
+    margin-top: 17px;
+    align-items: center;
+  }
+  .next-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    height: 40px;
+    margin-top: 85px;
+    align-items: center;
+  }
+  .flex-bottom {
+    width: 100%;
+  }
+  .prev-btn {
+    cursor: pointer;
+  }
+  .next-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .close-popup {
+    cursor: pointer;
+  }
+  .no-background::before {
+    background: none !important;
+  }
+  .first-2-inputs {
+    display: flex;
+  }
+  .second-2-inputs {
+    display: flex;
+  }
+  .scroll-btn {
+    display: none;
+  }
+  #color-optionSvg {
+    height: 56px;
+    width: 56px;
+  }
+  
+  @media screen and (max-width: 880px) {
+  
+      .configurator-btn.active::before,
+  .animations-btn.active::before {
+  bottom: 9px;
+  }
+   canvas {
+      width: 100%;
+      margin-right: 0 !important;
+    }
+    .upper-btns {
+      margin-top: 20px;
+      display: flex !important;
+    }
+    .upper-btns button {
+      font-size: 20px;
+    }
+    .animations {
+      padding-right: 15px;
+    }
+    .configurator {
+      padding-left: 15px;
+    }
+    .upper-btns .configurator {
+      width: 175px;
+    }
+    .upper-btns .animations {
+      width: 175px;
+    }
+    .configurator-btn, .animations-btn{
+      padding: 0 ;
+    }
+    .first-2-inputs,
+    .second-2-inputs {
+      flex-direction: column;
+      row-gap: 15px;
+    }
+    .second-2-inputs {
+      flex-direction: column;
+      row-gap: 15px;
+    }
+    .lower-btns {
+      margin-top: -165px;
+      display: flex;
+    }
+    .lower-btns input[type="radio"] + label::before {
+      content: none;
+    }
+    .lower-btns label {
+      justify-content: center;
+      padding: 12px 16px;
+      width: 155px;
+    }
+    #color-picker {
+      position: fixed;
+      right: unset;
+      left: 0;
+      bottom: 0;
+      top: unset;
+      width: 100% !important;
+      height: 295px;
+      transition: height 0.5s ease;
+      transition: right 0.5s ease;
+      padding: 12px 12px 16px;
+      border-radius: 0;
+    }
+    .title-x {
+      height: 30px;
+    }
+    .title-x .title {
+      font-size: 18px;
+    }
+    #close-popupSvg {
+      width: 20px;
+      height: 20px;
+    }
+    .flex-top {
+      width: 85%;
+      max-width: 390px;
+    }
+    .select-color{
+      height: 30px;
+    }
+    .color-options-container {
+      position: relative;
+    }
+    .color-options {
+      display: flex;
+      column-gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: none; 
+      scrollbar-width: none; /* Firefox */
+    }
+  
+    .color-picker::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
+    }
+    .scroll-btn {
+      display: flex;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+  
+    .left-btn {
+      left: -30px;
+    }
+  
+    .right-btn {
+      right: -30px;
+    }
+    #color-optionSvg {
+      width: 48px;
+      height: 48px;
+    }
+    .color-option {
+      width: 48px;
+      height: 48px;
+    }
+    .no-image-text {
+      margin-top: 15px;
+    }
+    .no-image {
+      margin-top: 10px;
+    }
+    .flex-bottom {
+      width: 85%;
+      max-width: 390px;
+    }
+    .next-wrapper {
+      margin-top: 0;
+    }
+    #no-imageSvg {
+      width: 42px;
+      height: 42px;
+    }
+  }
+  
+  @media screen and (max-width: 430px) {
+    .lower-btns label {
+      width: 115px;
+    }
+    .upper-btns button{
+      font-size: 18px;
+    }
+    .upper-btns .configurator{
+      width: 155px;
+    }
+    .upper-btns .animations{
+      width: 155px;
+    }
+   
+  }
+  
