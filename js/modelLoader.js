@@ -42,7 +42,7 @@ export function changeModelColor(materialName, color, removeMap = false) {
 
         MODEL_LOADED.traverse((child) => {
             if (child.isMesh && child.material) {
-                if(child.material.name === materialName){
+                if(child.material.name === materialName){   
                     if(removeMap){
                         child.material.map = null; // Remove texture map
                         child.material.needsUpdate = true;
