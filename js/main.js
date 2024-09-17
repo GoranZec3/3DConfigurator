@@ -1,50 +1,58 @@
 import * as THREE from "three";
-import { initScene, animate } from "./scene.js";
-import { loadModel, changeModelColor } from "./modelLoader.js";
+import { initScene, animate, passModelToScene} from "./scene.js";
 import { animateCamera} from "./cameraAnimation.js";
 import { ModelLoader} from "./model.js";
+import { ARButton } from './arButton.js';
 
 
 //globals
-const MODEL_PATH = "/models/ovini_chair_optimized.glb";
 let CAMERA;
 
 
-let ovini_chair 
-//ovini attributes
-let ovini_att = {
-  pathFabric: "/textures/fabric.png",
-  pathLegs: "/textures/legs.png",
-  positionFabric: null,
-  positionLegs: null
-};
+//placeholder for changeModelColor;
+let modelOnScene;
 
+let oviniChair; 
+let rendererAR;
+
+//logic for loading asset from assets.js
+const chairAsset = JSON.parse(localStorage.getItem('selectedChair'));
+
+let fabricPosition, legsPosition;
+
+function annotationiconPosition (){
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    fabricPosition = chairAsset.annotationFabricMobilePos;
+    legsPosition = chairAsset.annotationLegsMobilePos;
+} else {
+    fabricPosition = chairAsset.annotationFabricPos;
+    legsPosition = chairAsset.annotationLegsPos;
+}
+}
 
 function init() {
   const canvas = document.getElementById("canvas");
-  const { scene, camera, renderer } = initScene(canvas);
+  const { scene, camera, renderer } = initScene(canvas, chairAsset);
   CAMERA = camera;
+  rendererAR = renderer;
 
   const loadingOverlay = document.getElementById("loading-overlay");
   loadingOverlay.style.display = "flex";
+  
+  // The position of the annotation depends on the display
+  annotationiconPosition ();
 
-  if (window.matchMedia("(max-width: 768px)").matches) {
-    ovini_att.positionFabric = new THREE.Vector3(0, 0.7, 0.1);
-    ovini_att.positionLegs = new THREE.Vector3(0, -0.08, -0.1);
-  }else {
-    ovini_att.positionFabric = new THREE.Vector3(0, 0.55, 0.4);
-    ovini_att.positionLegs = new THREE.Vector3(0, 0.15, -0.3);
-  }
-
-  ovini_chair = new ModelLoader(scene, MODEL_PATH, camera);
+  oviniChair = new ModelLoader(scene, chairAsset.path, camera);
+  modelOnScene = oviniChair;
+    
   loadingOverlay.style.display = "none";
+ 
 
-  ovini_chair.addAnnotation('fabric', ovini_att.positionFabric, ovini_att.pathFabric, 0.2, 0.1);
-  ovini_chair.addAnnotation('legs', ovini_att.positionLegs, ovini_att.pathLegs, 0.2, 0.1);
-
+  oviniChair.addAnnotation('fabric', fabricPosition, chairAsset.pathFabric, 0.2, 0.1);
+  oviniChair.addAnnotation('legs', legsPosition, chairAsset.pathLegs, 0.2, 0.1);
  
   //if name is all it will change for all annotations, otherwise only by name
-  ovini_chair.setAnnotationVisibility('all', false);
+  oviniChair.setAnnotationVisibility('all', false);
 
   function resize() {
     const width = window.innerWidth;
@@ -62,6 +70,22 @@ function init() {
 }
 init();
 
+const arButton = ARButton.createButton(rendererAR, {
+  requiredFeatures: ["hit-test"]
+});
+rendererAR.xr.enabled = true;
+document.body.appendChild(arButton);
+
+arButton.addEventListener('click', () => {
+  console.log("AR button clicked");
+
+  oviniChair.model.visible = false;
+  passModelToScene(oviniChair.model);
+
+});
+
+
+
 /**model anotations:
  * fabric_mat,
  * metal_mat,
@@ -70,8 +94,9 @@ init();
  */
 
 document.querySelector(".animations-btn").addEventListener("click", () => {
-  ovini_chair.setAnnotationVisibility('all', true);
-  ovini_chair.triggerInteraction('fabric', () => {
+  console.log("###", oviniChair.model); // Log the model separately
+  oviniChair.setAnnotationVisibility('all', true);
+  oviniChair.triggerInteraction('fabric', () => {
     console.log("Fabric annotation clicked");
   });
 })
@@ -79,18 +104,18 @@ document.querySelector(".animations-btn").addEventListener("click", () => {
 
 document.querySelector(".animations-btn").addEventListener("click", () => {
   activateModifierBasedOnWidth();
-  ovini_chair.setAnnotationVisibility('all', true);
-  ovini_chair.triggerInteraction('fabric', () => {
+  oviniChair.setAnnotationVisibility('all', true);
+  oviniChair.triggerInteraction('fabric', () => {
     animateFabric();
-    ovini_chair.setAnnotationVisibility('all', false);
+    oviniChair.setAnnotationVisibility('all', false);
 
     $(".close-animation").css("display", "flex");
     $(".close-animation img").attr("src", "/textures/close.png");
   });
   
-  ovini_chair.triggerInteraction('legs', ()=>{
+  oviniChair.triggerInteraction('legs', ()=>{
     animatelegs();
-    ovini_chair.setAnnotationVisibility('all', false);
+    oviniChair.setAnnotationVisibility('all', false);
     $(".close-animation").css("display", "flex");
     $(".close-animation img").attr("src", "/textures/close.png");
   })
@@ -98,16 +123,16 @@ document.querySelector(".animations-btn").addEventListener("click", () => {
 
 $(".close-animation").click(function () {
   activateModifierBasedOnWidth();
-  ovini_chair.setAnnotationVisibility('all', true);
+  oviniChair.setAnnotationVisibility('all', true);
   $(this).css("display", "none");
 });
 
 document.querySelector(".configurator-btn").addEventListener("click", () => {
   $(".close-animation").css("display", "none");
   //set camera on start position
-  animateCamera(CAMERA, new THREE.Vector3(2, 0.35, 0));
+  activateModifierBasedOnWidth();
 
-  ovini_chair.setAnnotationVisibility('all', false);
+  oviniChair.setAnnotationVisibility('all', false);
 });
 
 $(document).ready(function () {
@@ -115,6 +140,7 @@ $(document).ready(function () {
     activateModifierBasedOnWidth();
     applyMarginBasedOnChange();
     applyMarginBasedOnChangeMobile();
+  annotationiconPosition () 
   });
 });
 
@@ -163,16 +189,16 @@ function applyMarginBasedOnChangeMobile() {
 
 function animateFabric() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(0.9, 1.5, 0.5));
+    animateCamera(CAMERA, chairAsset.animateFabricMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(0.6, 1.5, 0.4));
+    animateCamera(CAMERA, chairAsset.animateFabricDesctop);
   }
 }
 function animatelegs() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(1.2, -0.8, 0.9));
+    animateCamera(CAMERA, chairAsset.animateLegsMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(1, -0.2,0.3));
+    animateCamera(CAMERA, chairAsset.animateLegsDesctop);
   }
 }
 
@@ -319,9 +345,10 @@ function clearColorOptionEventListeners() {
 
 function activateModifierBasedOnWidth() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(2.6, 0.35, 0));
+
+    animateCamera(CAMERA, chairAsset.cameraPosMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(2, 0.35, 0));
+    animateCamera(CAMERA, chairAsset.cameraPos);
   }
 }
 function activateAnimationBodyPart() {
@@ -368,15 +395,15 @@ function bodyClicked() {
       if (option.dataset.color === selectedBodyColor) {
         option.classList.add("selected");
 
-        changeModelColor("metal_mat", selectedBodyColor);
-        changeModelColor("fabric_mat", selectedFabricColor);
-        changeModelColor("laces_mat", selectedLacesColor);
-        changeModelColor("wood_mat", selectedLegsColor);
+        modelOnScene.changeModelColor("metal_mat", selectedBodyColor);
+        modelOnScene.changeModelColor("fabric_mat", selectedFabricColor);
+        modelOnScene.changeModelColor("laces_mat", selectedLacesColor);
+        modelOnScene.changeModelColor("wood_mat", selectedLegsColor);
       } else {
         option.classList.remove("selected");
       }
     } else {
-      changeModelColor("metal_mat", "#d4c8a3");
+      modelOnScene.changeModelColor("metal_mat", "#d4c8a3");
     }
 
     option.addEventListener("click", function () {
@@ -395,10 +422,10 @@ function bodyClicked() {
           selectedFabricColor = "#d4c8a3";
           selectedLegsColor = "#d4c8a3";
           selectedLacesColor = "#d4c8a3";
-        changeModelColor("metal_mat", selectedBodyColor);
-        changeModelColor("fabric_mat",  selectedFabricColor);
-        changeModelColor("laces_mat",  selectedLacesColor);
-        changeModelColor("wood_mat", selectedLegsColor);
+        modelOnScene.changeModelColor("metal_mat", selectedBodyColor);
+        modelOnScene.changeModelColor("fabric_mat",  selectedFabricColor);
+        modelOnScene.changeModelColor("laces_mat",  selectedLacesColor);
+        modelOnScene.changeModelColor("wood_mat", selectedLegsColor);
 
       }
     });
@@ -428,9 +455,9 @@ function setupColorOptions(partType, selectedColor, defaultColor, partObjects) {
     if (previousBodyColor !== "" && selectedBodyColor !== previousBodyColor) {
       option.classList.remove("selected");
       colorOptions[0].classList.add("selected");
-      changeModelColor(partObjects, defaultColor);
+      modelOnScene.changeModelColor(partObjects, defaultColor);
     } else {
-      changeModelColor(partObjects, selectedColor);
+      modelOnScene.changeModelColor(partObjects, selectedColor);
     }
 
     option.addEventListener("click", function () {
@@ -454,7 +481,7 @@ function setupColorOptions(partType, selectedColor, defaultColor, partObjects) {
       }
 
       document.querySelector(".color-chosen").textContent = this.dataset.name;
-      changeModelColor(partObjects, newColor);
+      modelOnScene.changeModelColor(partObjects, newColor);
     });
   });
 }
@@ -503,4 +530,7 @@ $(".left-btn").on("click", function () {
 
 $(".right-btn").on("click", function () {
   $(".color-options").animate({ scrollLeft: "+=100px" }, "smooth");
+});
+$(".chose-model").on("click", function () {
+  window.location.href = 'index.html';
 });

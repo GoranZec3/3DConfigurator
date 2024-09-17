@@ -8,6 +8,19 @@ body {
   background: #fff;
 }
 
+.chose-model{
+  position: absolute;
+  top: 100px;
+  z-index: 3;
+  cursor: pointer;
+  background: #acdddb94;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+.chose-model:hover{
+  border-bottom: 1px solid red;
+}
+
 .container {
   display: flex;
   position: relative;

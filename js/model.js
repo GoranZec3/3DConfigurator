@@ -21,7 +21,9 @@ export class ModelLoader {
                 (gltf) => {
                     this.model = gltf.scene;
                     this.scene.add(this.model);
+                    // this.model.position.z = -2;
                     console.log('Model loaded successfully.');
+                    
                     resolve();
                 },
                 undefined,

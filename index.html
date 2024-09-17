@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
-    <title>3D Configurator</title>
+    <title>Model Selector</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="importmap">
         {
@@ -15,195 +14,20 @@
             }
         }
     </script>
+    <link rel="stylesheet" href="css/model-select.css">
 </head>
 <body>
     <div class="container">
-        <div class="upper-btns">
-            <div class="configurator">
-                <button class="configurator-btn active">CONFIGURATOR</button>
-            </div>
-            <div class="animations">
-                <button class="animations-btn">ANIMATIONS</button>
-                <div class="close-animation"  style="display: none;">
-                  <img src="" alt="">
-                </div>
-            </div>
+        <h1>Select a Model</h1>
+        <div class="model" id="load-chair-1">
+            <button >Ovini chair</button>
+            <img src="/textures/chair1.png" alt="Chair 1">
         </div>
-        <div id="loading-overlay">
-          <div class="spinner"></div>
-          <p>Model Loading...</p>
-      </div>
-        <canvas id="canvas">
-
-           
-        </canvas>
-        <div id="color-picker">
-               <div class="flex-top">
-
-               
-               <div class="title-x">
-                   <div class="title">BODY COLOR</div>
-                   <div class="close-popup"><svg id="close-popupSvg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                       <path fill-rule="evenodd" clip-rule="evenodd" d="M4.46967 4.46967C4.76256 4.17678 5.23744 4.17678 5.53033 4.46967L12 10.9393L18.4697 4.46967C18.7626 4.17678 19.2374 4.17678 19.5303 4.46967C19.8232 4.76256 19.8232 5.23744 19.5303 5.53033L13.0607 12L19.5303 18.4697C19.8232 18.7626 19.8232 19.2374 19.5303 19.5303C19.2374 19.8232 18.7626 19.8232 18.4697 19.5303L12 13.0607L5.53033 19.5303C5.23744 19.8232 4.76256 19.8232 4.46967 19.5303C4.17678 19.2374 4.17678 18.7626 4.46967 18.4697L10.9393 12L4.46967 5.53033C4.17678 5.23744 4.17678 4.76256 4.46967 4.46967Z" fill="#121010"/>
-                     </svg></div>
-               </div>
-               <div class="select-color">
-                   <div class="select-color-title">Select color</div>
-                   <div class="color-chosen">ALUMINUM</div>
-               </div>
-               <div class="color-options-container">
-                
-                   <div class="scroll-btn left-btn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <rect width="16" height="16" fill="white"/>
-                    <path d="M11 3L5 8.17668L11 14" stroke="#121010"/>
-                  </svg></div>
-               <div class="color-options">
-                   <div class="color-option selected" data-color="#d4c8a3" data-name="ALUMINUM"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="21" fill="url(#paint0_linear_0_100)"/>
-                       <circle cx="28" cy="28" r="24" fill="url(#paint1_linear_0_100)"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_100" x1="7" y1="-0.583334" x2="49" y2="49" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#21272B"/>
-                           <stop offset="0.511328" stop-color="#d4c8a3"/>
-                           <stop offset="1" stop-color="#21272B"/>
-                         </linearGradient>
-                         <linearGradient id="paint1_linear_0_100" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#21272B"/>
-                           <stop offset="0.511328" stop-color="#d4c8a3"/>
-                           <stop offset="1" stop-color="#21272B"/>
-                         </linearGradient>
-                       </defs>
-                     </svg> </div>
-                     <div class="color-option"  data-color="#444444" data-name="BLACK"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="21" fill="url(#paint0_linear_0_108)"/>
-                       <circle cx="28" cy="28" r="24" fill="url(#paint1_linear_0_108)"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_108" x1="7" y1="-0.583334" x2="49" y2="49" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#B15E22"/>
-                           <stop offset="0.511328" stop-color="#D29969"/>
-                           <stop offset="1" stop-color="#B15E22"/>
-                         </linearGradient>
-                         <linearGradient id="paint1_linear_0_108" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop offset="0.2" stop-color="#232B2C"/>
-                           <stop offset="0.511328" stop-color="#6B6B6B"/>
-                           <stop offset="0.8" stop-color="#21272B"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                     <div class="color-option"  data-color="#FF0000" data-name="RED"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <circle cx="28" cy="28" r="24" fill="url(#paint0_linear_0_112)"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_112" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#6E0404"/>
-                           <stop offset="0.511328" stop-color="#D14048"/>
-                           <stop offset="1" stop-color="#70040A"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                   <div class="color-option"  data-color="#0000FF" data-name="BLUE"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="24" fill="url(#paint0_linear_0_91)"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_91" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#232B2C"/>
-                           <stop offset="0.511328" stop-color="#5563EC"/>
-                           <stop offset="0.511428" stop-color="#5563EB"/>
-                           <stop offset="1" stop-color="#21272B"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                   <div class="color-option"  data-color="#6AA84F" data-name="GREEN"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="24" fill="url(#paint0_linear_0_94)"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_94" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#232B2C"/>
-                           <stop offset="0.511328" stop-color="#ABCB9A"/>
-                           <stop offset="1" stop-color="#21272B"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                   <div class="color-option"  data-color="#E69138" data-name="ORANGE"><svg id="color-optionSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="24" fill="url(#paint0_linear_0_97)"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_97" x1="4" y1="-4.66667" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#B15E22"/>
-                           <stop offset="0.511328" stop-color="#D29969"/>
-                           <stop offset="1" stop-color="#B15E22"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                    </div>
-                    <div class="scroll-btn right-btn" > <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <rect width="16" height="16" fill="white"/>
-                        <path d="M5 14L11 8.82332L5 3" stroke="#121010"/>
-                      </svg></div>
-            </div>
-               <div class="no-image-text">
-                   <div class="select-color-title">Image</div>
-                   <div class="color-chosen">NO IMAGE</div>
-               </div>
-               <div class="no-image">
-                   <div ><svg id="no-imageSvg" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56" fill="none">
-                       <circle cx="28" cy="28" r="21" fill="url(#paint0_linear_0_104)"/>
-                       <circle cx="28" cy="28" r="24" fill="#EFEFEF"/>
-                       <circle cx="28" cy="28" r="27.5" stroke="#121010"/>
-                       <line x1="14" y1="42" x2="42" y2="14" stroke="#121010" stroke-width="2"/>
-                       <defs>
-                         <linearGradient id="paint0_linear_0_104" x1="7" y1="-0.583334" x2="49" y2="49" gradientUnits="userSpaceOnUse">
-                           <stop stop-color="#B15E22"/>
-                           <stop offset="0.511328" stop-color="#D29969"/>
-                           <stop offset="1" stop-color="#B15E22"/>
-                         </linearGradient>
-                       </defs>
-                     </svg></div>
-                   <div ><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                       <path d="M10 1V19M1 10H19" stroke="#121010" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                     </svg></div>
-               </div>
-           </div>
-
-           <div class="flex-bottom">
-
-               <div class="next-wrapper">
-                   <div class="prev-btn" ><svg xmlns="http://www.w3.org/2000/svg" width="25" height="15" viewBox="0 0 25 15" fill="none">
-                       <path d="M1 7.8821L7.375 14M1 7.8821L7.375 1M1 7.8821L25 7.8821" stroke="#121010"/>
-                     </svg></div>
-                   <div  class="next-btn" ><div >Next </div>  <svg xmlns="http://www.w3.org/2000/svg" width="25" height="15" viewBox="0 0 25 15" fill="none">
-                       <path d="M24 7.8821L17.625 14M24 7.8821L17.625 1M24 7.8821L0 7.8821" stroke="#121010"/>
-                     </svg></div>
-               </div>
-           </div>
-           </div>
-            <div class="lower-btns">
-                <div class="first-2-inputs">
-        
-                
-                <input type="radio" id="body" name="part" value="body" />
-                <label for="body">Body</label>
-        
-                <input type="radio" id="laces" name="part" value="laces" />
-                <label for="laces">laces</label>
-            </div>
-            <div class="second-2-inputs">
-                <input type="radio" id="fabric" name="part" value="fabric" />
-                <label for="fabric">fabric</label>
-        
-                <input type="radio" id="legs" name="part" value="legs" />
-                <label for="legs">legs</label>
-            </div>
-            </div>
-</div>
-    
-
-
-<script src="./js/main.js" type="module"></script>
-   
-
-    
+        <div class="model" id="load-chair-2">
+            <button >Tamarack</button>
+            <img src="/textures/chair2.png" alt="Chair 2">
+        </div>
+    </div>
+    <script src="./js/script.js" type="module"></script>
 </body>
 </html>
