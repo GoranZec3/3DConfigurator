@@ -126,8 +126,8 @@ export default [
       { name: "ORANGE", color: "#E69138" },
     ],
     materials: {
-      body: "metal_mat",
-      fabric: "fabric_mat",
+      body: "mt_fabric_mat",
+      fabric: "mt_wood_mat",
     },
   },
 ];
