@@ -7,9 +7,10 @@ class ARButton {
 
         function showStartAR() {
             if (sessionInit.domOverlay === undefined) {
-                const overlay = document.createElement('div');
-                overlay.style.display = 'none';
+                 const overlay = document.createElement('div');
+                 overlay.style.display = 'none';
                 document.body.appendChild(overlay);
+                document.querySelector('.ar-div').appendChild(button);
 
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 svg.setAttribute('width', 38);

@@ -7,19 +7,59 @@ body {
   height: 100dvh;
   background: #fff;
 }
-
-.chose-model{
-  position: absolute;
-  top: 100px;
-  z-index: 3;
+.ar-button{
+  color: #121010;
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.44px;
+  text-transform: uppercase;
+  border: none;
+  height: 64px;
+  background: none;
   cursor: pointer;
-  background: #acdddb94;
-  padding: 5px 10px;
-  border-radius: 8px;
+  position: relative;
 }
-.chose-model:hover{
-  border-bottom: 1px solid red;
+.ar-button{
+  color: #121010;
+  width: 100%;
+  text-align: center;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.44px;
+  text-transform: uppercase;
+  border: none;
+  height: 64px;
+  background: none;
+  cursor: pointer;
+  position: relative;
 }
+.chose-model{
+  color: #121010;
+  background: #acdddb94 !important;
+  width: 100%;
+  width: 200px;
+  text-align: center;
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.44px;
+  text-transform: uppercase;
+  border: none;
+  height: 40px;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  border-radius: 8px 0 0 8px;
+  font-size: 16px;
+}
+
 
 .container {
   display: flex;
@@ -35,10 +75,11 @@ body {
 
 .upper-btns {
   display: flex;
+  gap: 5px;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: 32px;
+  /* margin-top: 41px; */
   position: absolute;
   z-index: 4;
 }
@@ -46,11 +87,12 @@ body {
 .upper-btns > div {
   display: flex;
   justify-content: center;
+  align-items: center;
   background: #fff;
   background: rgba(255, 255, 255, 0.48);
   backdrop-filter: blur(8px);
 }
-.upper-btns .configurator {
+.upper-btns .configurator  {
   border-radius: 8px 0 0 8px;
   width: 300px;
 }
@@ -58,8 +100,9 @@ body {
   border-radius: 0 8px 8px 0;
   width: 300px;
 }
-.configurator {
-  padding-left: 40px;
+.upper-btns-container{
+  width: 100%;
+  position: relative;
 }
 .configurator-btn {
   border-radius: 8px 0 0 8px;
@@ -71,13 +114,10 @@ body {
 .animations-btn {
   padding: 0 25px;
 }
-.animations {
-  padding-right: 40px;
-}
 .close-animation {
-  bottom: -40px;
-  right: 10px;
+  top: 10px;
   position: absolute;
+  z-index: 6;
 }
 .close-animation img {
   width: 30px;
@@ -99,6 +139,11 @@ body {
   background: none;
   cursor: pointer;
   position: relative;
+}
+.choose-ar .ar-div button{
+height: 40px;
+font-size: 16px;
+width: 200px;
 }
 
 .configurator-btn.active::before,
@@ -154,7 +199,7 @@ body {
 }
 
 canvas {
-  position: relative;
+  /* position: relative; */
   width: 100%;
   height: 100dvh;
   transition: margin-right 1s ease;
@@ -163,15 +208,39 @@ canvas {
 }
 .lower-btns {
   display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   width: 100%;
   margin-top: -85px;
   z-index: 1;
 }
-
+.choose-ar{
+  gap: 5px;
+  display: flex;
+  margin-top: 68px;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /* margin-top: 41px; */
+  z-index: 4;
+}
+.ar-div{
+  position: relative;
+}
+/* .ar-button{
+position: none;
+} */
+.ar-button {
+  position: static; 
+  display: block; 
+  width: auto; 
+  position: unset !important;
+  border-radius: 0 8px 8px 0;
+}
 .lower-btns label {
-  margin: 0 10px;
   color: #121010;
   background-color: #acdddb94 !important;
   font-family: "Manrope", sans-serif;
@@ -221,7 +290,7 @@ canvas {
   justify-content: space-between !important;
   font-family: "Manrope", sans-serif;
   width: 280px;
-  height: 515px;
+  height: 400px;
   padding: 20px;
   box-sizing: border-box;
   flex-direction: column;
@@ -243,8 +312,8 @@ canvas {
   width: 100%;
 }
 .color-option {
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: 1px solid transparent;
   cursor: pointer;
@@ -359,23 +428,15 @@ canvas {
     width: 100%;
     margin-right: 0 !important;
   }
-  .upper-btns {
-    margin-top: 20px;
-    display: flex !important;
-  }
-  .upper-btns button {
+
+  .upper-btns button{
     font-size: 20px;
   }
-  .animations {
-    padding-right: 15px;
-  }
-  .configurator {
-    padding-left: 15px;
-  }
+
   .upper-btns .configurator {
     width: 175px;
   }
-  .upper-btns .animations {
+  .upper-btns .animations ,.chose-model,.ar-div{
     width: 175px;
   }
   .configurator-btn,
@@ -410,7 +471,7 @@ canvas {
     bottom: 0;
     top: unset;
     width: 100% !important;
-    height: 295px;
+    height: 220px;
     transition: height 0.5s ease;
     transition: right 0.5s ease;
     padding: 12px 12px 16px;
@@ -468,10 +529,6 @@ canvas {
     width: 48px;
     height: 48px;
   }
-  .color-option {
-    width: 48px;
-    height: 48px;
-  }
   .no-image-text {
     margin-top: 15px;
   }
@@ -495,13 +552,13 @@ canvas {
   .lower-btns label {
     width: 115px;
   }
-  .upper-btns button {
+  .upper-btns button{
     font-size: 18px;
   }
   .upper-btns .configurator {
     width: 155px;
   }
-  .upper-btns .animations {
+  .upper-btns .animations ,.chose-model,.ar-div{
     width: 155px;
   }
 }

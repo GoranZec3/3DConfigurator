@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { initScene, animate, passModelToScene} from "./scene.js";
+import { initScene, animate, passModelToScene, sceneBackgroundSet} from "./scene.js";
 import { animateCamera} from "./cameraAnimation.js";
 import { ModelLoader} from "./model.js";
-import { ARButton } from './arButton.js';
+import { ARButton } from './ARButton.js';
 
 
 //globals
@@ -18,6 +18,20 @@ let rendererAR;
 //logic for loading asset from assets.js
 const chairAsset = JSON.parse(localStorage.getItem('selectedChair'));
 
+const container = $('.lower-btns');
+        container.empty();
+
+        const parts = chairAsset.parts;
+
+        parts.forEach(part => {
+            // Create radio input
+            const radioInput = `<div><input type="radio" id="${part.id}" name="part" value="${part.id}" /></div>`;
+            const label = `<label for="${part.id}">${part.label}</label>`;
+
+            // Append the input and label to the container
+            container.append(radioInput);
+            container.append(label);
+        });
 let fabricPosition, legsPosition;
 
 function annotationiconPosition (){
@@ -30,14 +44,31 @@ function annotationiconPosition (){
 }
 }
 
+function getIconSize(mobileSize, desktopSize) {
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    return mobileSize;
+  } else {
+    return desktopSize;
+  }
+}
+
+const fabricIconSize = getIconSize(
+  chairAsset.fabricIconSizeMobile, 
+  chairAsset.fabricIconSizeDesktop
+);
+const legsIconSize = getIconSize(
+  chairAsset.legsIconSizeMobile, 
+  chairAsset.legsIconSizeDesktop
+);
+
+
 function init() {
   const canvas = document.getElementById("canvas");
   const { scene, camera, renderer } = initScene(canvas, chairAsset);
   CAMERA = camera;
   rendererAR = renderer;
 
-  const loadingOverlay = document.getElementById("loading-overlay");
-  loadingOverlay.style.display = "flex";
+
   
   // The position of the annotation depends on the display
   annotationiconPosition ();
@@ -45,11 +76,11 @@ function init() {
   oviniChair = new ModelLoader(scene, chairAsset.path, camera);
   modelOnScene = oviniChair;
     
-  loadingOverlay.style.display = "none";
  
 
-  oviniChair.addAnnotation('fabric', fabricPosition, chairAsset.pathFabric, 0.2, 0.1);
-  oviniChair.addAnnotation('legs', legsPosition, chairAsset.pathLegs, 0.2, 0.1);
+  oviniChair.addAnnotation('fabric', fabricPosition, chairAsset.pathFabric,   fabricIconSize.width,
+    fabricIconSize.height  );
+  oviniChair.addAnnotation('legs', legsPosition, chairAsset.pathLegs,  legsIconSize.width, legsIconSize.height);
  
   //if name is all it will change for all annotations, otherwise only by name
   oviniChair.setAnnotationVisibility('all', false);
@@ -70,21 +101,25 @@ function init() {
 }
 init();
 
+
 const arButton = ARButton.createButton(rendererAR, {
   requiredFeatures: ["hit-test"]
 });
 rendererAR.xr.enabled = true;
-document.body.appendChild(arButton);
+const arDiv = document.querySelector('.ar-div');
+// Append the AR Button inside the 'ar-div' instead of the body
+arDiv.appendChild(arButton);
 
 arButton.addEventListener('click', () => {
   console.log("AR button clicked");
-
+  if ($('#ARButton').text().trim() === 'AR NOT SUPPORTED') return
+ console.log(oviniChair.model);
+ 
   oviniChair.model.visible = false;
   passModelToScene(oviniChair.model);
+  sceneBackgroundSet(false);
 
 });
-
-
 
 /**model anotations:
  * fabric_mat,
@@ -94,41 +129,67 @@ arButton.addEventListener('click', () => {
  */
 
 document.querySelector(".animations-btn").addEventListener("click", () => {
-  console.log("###", oviniChair.model); // Log the model separately
-  oviniChair.setAnnotationVisibility('all', true);
+  oviniChair.setAnnotationVisibility('all', true); // Show all annotations
+
+  activateModifierBasedOnWidth(); 
+  $(".lower-btns").css("display", "none");
+
+  // Handle fabric interaction
   oviniChair.triggerInteraction('fabric', () => {
     console.log("Fabric annotation clicked");
-  });
-})
-
-
-document.querySelector(".animations-btn").addEventListener("click", () => {
-  activateModifierBasedOnWidth();
-  oviniChair.setAnnotationVisibility('all', true);
-  oviniChair.triggerInteraction('fabric', () => {
-    animateFabric();
-    oviniChair.setAnnotationVisibility('all', false);
+    animateFabric(); // Trigger fabric animation
+    oviniChair.setAnnotationVisibility('all', false); // Hide annotations
 
     $(".close-animation").css("display", "flex");
-    $(".close-animation img").attr("src", "/textures/close.png");
+    $(".upper-btns-container").animate({
+      opacity: 0,
+      top: "-20px"
+    }, 400, function() {
+      $(this).css("display", "none");
+    });
   });
+
+  // Handle legs interaction
+  oviniChair.triggerInteraction('legs', () => {
+    animatelegs(); // Trigger legs animation
+    oviniChair.setAnnotationVisibility('all', false); // Hide annotations
+
+    $(".close-animation").css("display", "flex");
+    $(".upper-btns-container").animate({
+      opacity: 0,
+      top: "-20px"
+    }, 400, function() {
+      $(this).css("display", "none");
+    });
+  });
+});
+
+
+function closeAnimationBtn (){
+
+  $(".close-animation").click(function () {
+    $(".upper-btns-container").css({
+      opacity: 0,       
+      top: "-20px",     
+      display: "flex"  
+  }).animate({
+      opacity: 1,      
+      top: "0px"        
+  }, 400);  
+    activateModifierBasedOnWidth();
+    oviniChair.setAnnotationVisibility('all', true);
+    $(this).css("display", "none");
   
-  oviniChair.triggerInteraction('legs', ()=>{
-    animatelegs();
-    oviniChair.setAnnotationVisibility('all', false);
-    $(".close-animation").css("display", "flex");
-    $(".close-animation img").attr("src", "/textures/close.png");
-  })
-});
+  
+  });
+}
 
-$(".close-animation").click(function () {
-  activateModifierBasedOnWidth();
-  oviniChair.setAnnotationVisibility('all', true);
-  $(this).css("display", "none");
-});
+closeAnimationBtn ()
 
-document.querySelector(".configurator-btn").addEventListener("click", () => {
+document.querySelector(".configurator-btn").addEventListener("click", () => {  
   $(".close-animation").css("display", "none");
+  $(".lower-btns").css("display", "flex");
+
   //set camera on start position
   activateModifierBasedOnWidth();
 
@@ -136,56 +197,48 @@ document.querySelector(".configurator-btn").addEventListener("click", () => {
 });
 
 $(document).ready(function () {
-  $(window).resize(function () {
+  $(window).resize(function () {   
     activateModifierBasedOnWidth();
-    applyMarginBasedOnChange();
-    applyMarginBasedOnChangeMobile();
   annotationiconPosition () 
+  $(".close-animation").css("display", "none");
+  
+  $(".upper-btns-container").css({
+    opacity: 0,       
+    top: "-20px",     
+    display: "flex"  
+}).animate({
+    opacity: 1,      
+    top: "0px"        
+}, 400);
   });
 });
 
-let selectedBodyColor = "#d4c8a3";
+let selectedBodyColor = chairAsset.colors[0].color;
 let previousBodyColor = "";
-let selectedFabricColor = "#d4c8a3";
-let selectedLacesColor = "#d4c8a3";
-let selectedLegsColor = "#d4c8a3";
+let selectedFabricColor = chairAsset.colors[0].color;
+let selectedLacesColor = chairAsset.colors[0].color;
+let selectedLegsColor = chairAsset.colors[0].color;
 
 function applyMarginBasedOnChangeMobile() {
-  const isMobile = window.matchMedia("(max-width: 880px)").matches;
-  const isActiveAnimation = $(".animations-btn.active").length > 0;
-  const isActiveConfigurator = $(".configurator-btn.active").length > 0;
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
   const isCheckedRadio =
     $('.lower-btns input[type="radio"]:checked').length > 0;
 
   if (isMobile) {
     if (isCheckedRadio) {
-      $("#canvas").css("margin-top", "-145px");
+      $("#canvas").css("margin-top", "-105px");
       $(".lower-btns").css({ display: "none" });
     } else {
       $(".lower-btns").css("display", "flex");
-      $("#canvas").css("height", "100vh");
     }
   } else {
     $("#canvas").css({ "margin-top": "0" });
     $(".lower-btns").css("display", "flex");
   }
-  if (!isCheckedRadio) {
-    $("#canvas").css("margin-right", "0");
-  }
-  if (isActiveAnimation) {
-    $(".lower-btns").css("display", "none");
-    $("#color-picker").css("display", "none");
-    $(".upper-btns").css("display", "flex");
-    $("#canvas").css({
-      "margin-right": "0",
-      width: "100%",
-      height: "100vh",
-    });
-    $("#canvas").css({ "margin-top": "0" });
 
-    $('.lower-btns input[type="radio"]:checked').prop("checked", false);
-  }
 }
+
 
 function animateFabric() {
   if (window.matchMedia("(max-width: 768px)").matches) {
@@ -202,37 +255,19 @@ function animatelegs() {
   }
 }
 
-function applyMarginBasedOnChange() {
-  const colorPicker = $("#color-picker");
-  const colorOptions = $(".color-options");
-  const container3d = $("#canvas");
 
-  if (window.matchMedia("(max-width: 1000px)").matches) {
-    container3d.css("margin-right", "25%");
-    colorPicker.css({ right: "10px", width: "260px" });
-    colorOptions.css("column-gap", "15px");
-  } else if (window.matchMedia("(max-width: 1210px)").matches) {
-    colorOptions.css("column-gap", "15px");
-  } else {
-    container3d.css("margin-right", "0");
-    container3d.css("margin-right", "0");
-    colorPicker.css("right", "35px");
-  }
-}
 
 // event that define any chage on suitcase parts
 $('.lower-btns input[type="radio"]').on("change", function () {
-  const isMobile = window.matchMedia("(max-width: 880px)").matches;
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
   const selectedValue = event.target.value;
-
+  applyMarginBasedOnChangeMobile()
   handleRadioChange(selectedValue);
   if (isMobile) {
     $("#color-picker").css("display", "flex");
   } else {
     $("#color-picker").css("display", "flex").hide().fadeIn("fast");
   }
-  applyMarginBasedOnChange();
-  applyMarginBasedOnChangeMobile();
 });
 // logic for each suitcase part
 function handleRadioChange(selectedValue) {
@@ -259,7 +294,7 @@ function handleRadioChange(selectedValue) {
 }
 
 // next and previous btn order
-const inputs = ["#body", "#laces", "#fabric", "#legs"];
+const inputs = chairAsset.parts.map(part => `#${part.id}`);
 let currentIndex = 0;
 
 function setCurrentIndex(index) {
@@ -288,13 +323,6 @@ buttons.on("click", function () {
   $(this).addClass("active");
 });
 
-$(document).on("click", ".animations-btn.active", function () {
-  applyMarginBasedOnChangeMobile();
-});
-
-$(document).on("click", ".configurator-btn.active", function () {
-  applyMarginBasedOnChangeMobile();
-});
 
 function closeColorPicker() {
   $("#color-picker").css("display", "none");
@@ -303,21 +331,30 @@ function closeColorPicker() {
   $(".upper-btns").css("display", "flex");
   $(".lower-btns").css("display", "flex");
   $("#canvas").css("height", "100vh");
+  $(".upper-btns, .chose-model").css("display", "flex");
   activateModifierBasedOnWidth();
+
+  $(".upper-btns-container").css({
+    opacity: 0,       
+    top: "-20px",     
+    display: "flex"  
+}).animate({
+    opacity: 1,      
+    top: "0px"        
+}, 400);  
 }
 
 $(".close-popup").click(function () {
   closeColorPicker();
 });
 
-const colorCombinations = {
-  "#0000FF": ["#0000FF", "#444444", "#d4c8a3"],
-  "#6AA84F": ["#6AA84F", "#444444", "#d4c8a3"],
-  "#E69138": ["#E69138", "#444444", "#d4c8a3"],
-  "#FF0000": ["#FF0000", "#444444", "#d4c8a3"],
-  "#444444": ["#444444", "#d4c8a3"],
-  "#d4c8a3": ["#444444", "#d4c8a3"],
-};
+const colorCombinations = {};
+const colors = chairAsset.colors.map(color => color.color);
+const [firstColor, secondColor] = colors; 
+colors.forEach(color => {
+ 
+  colorCombinations[color] = Array.from(new Set([color, firstColor, secondColor]));
+});
 
 // on body color selection depends other available color option for other parts. default for body is CHROME SATIN ALUMINUM. if user chose other body color then other parts reset to default color
 function updateColorOptions(selectedColor) {
@@ -326,11 +363,11 @@ function updateColorOptions(selectedColor) {
   if (availableColors === undefined) return;
 
   $(".color-option").each(function () {
-    const $option = $(this);
-    if (availableColors.includes($option.data("color"))) {
-      $option.show().removeClass("selected");
+    const option = $(this);
+    if (availableColors.includes(option.data("color"))) {
+      option.show().removeClass("selected");
     } else {
-      $option.hide();
+      option.hide();
     }
   });
 }
@@ -353,84 +390,165 @@ function activateModifierBasedOnWidth() {
 }
 function activateAnimationBodyPart() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(2.4, 0.35, 0));
+    animateCamera(CAMERA, chairAsset.animationBodyMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(1.8, 0.35, 0));
+    animateCamera(CAMERA, chairAsset.animationBodyDesktop);
   }
 }
 function activateAnimationFabricPart() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(2, 1.4, 0));
+    animateCamera(CAMERA,chairAsset.animationFabricMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(1, 1.4, 0));
+    animateCamera(CAMERA, chairAsset.animationFabricDesktop);
   }
 }
 function activateAnimationLacesPart() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(0.7, 1, -0.9));
+    animateCamera(CAMERA, chairAsset.animationLacesMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(0.4, 0.9, 0.5));
+    animateCamera(CAMERA, chairAsset.animationLacesDesktop);
   }
 }
 function activateAnimationLegsPart() {
   if (window.matchMedia("(max-width: 768px)").matches) {
-    animateCamera(CAMERA, new THREE.Vector3(1.9, -0.3, 0.2));
+    animateCamera(CAMERA, chairAsset.animationLegsMobile);
   } else {
-    animateCamera(CAMERA, new THREE.Vector3(1.2, -0.3, 0.2));
+    animateCamera(CAMERA, chairAsset.animationLegsDesktop);
   }
 }
+const colorsC = chairAsset.colors;
+
+const colorOptionsContainer = document.querySelector(".color-options");
+
+
+colorOptionsContainer.innerHTML = '';
+
+colorsC.forEach((color) => {
+  const colorOption = document.createElement('div');
+  colorOption.classList.add('color-option');
+  colorOption.dataset.color = color.color;
+  colorOption.dataset.name = color.name;
+
+ 
+  if (color.color === selectedBodyColor) {
+    colorOption.classList.add("selected");
+  }
+
+
+  colorOption.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 56 56" fill="none">
+      <circle cx="28" cy="28" r="23" fill="${color.color}" />
+      <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
+    </svg>
+  `;
+
+})
+
+const colorsA = chairAsset.colors;
+const colorOptionsContainerA = document.querySelector(".color-options");
+
+colorOptionsContainerA.innerHTML = '';
+
+colorsA.forEach((color) => {
+  const colorOption = document.createElement('div');
+  colorOption.classList.add('color-option');
+  colorOption.dataset.color = color.color;
+  colorOption.dataset.name = color.name;
+
+ 
+  if (color.color === selectedBodyColor) {
+    colorOption.classList.add("selected");
+  }
+
+  colorOption.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 56 56" fill="none">
+      <circle cx="28" cy="28" r="23" fill="${color.color}" />
+      <circle cx="28" cy="28" r="27.5" stroke="#E5E5E5"/>
+    </svg>
+  `;
+  colorOptionsContainerA.appendChild(colorOption);
+})
+
 function bodyClicked() {
-  $(".title-x .title").text("BODY COLOR");
+  
+  $(".title-x .title").text(chairAsset.parts[0].label);
+  // $(".color-picker").css("display", "flex");
   activateAnimationBodyPart();
 
-  $(".upper-btns").css("display", "none");
+  $(".upper-btns-container").animate({
+    opacity: 0,     
+    top: "-20px"    
+}, 400, function() {
+
+    $(this).css("display", "none");
+});
   clearColorOptionEventListeners();
-  const colorOptions = document.querySelectorAll(".color-option");
-  colorOptions.forEach((option) => {
-    document.querySelector(".color-chosen").textContent = $(
-      ".color-option.selected"
-    ).data("name");
-    option.style.display = "flex";
-    if (selectedBodyColor !== "") {
-      if (option.dataset.color === selectedBodyColor) {
-        option.classList.add("selected");
 
-        modelOnScene.changeModelColor("metal_mat", selectedBodyColor);
-        modelOnScene.changeModelColor("fabric_mat", selectedFabricColor);
-        modelOnScene.changeModelColor("laces_mat", selectedLacesColor);
-        modelOnScene.changeModelColor("wood_mat", selectedLegsColor);
-      } else {
-        option.classList.remove("selected");
-      }
+ 
+  const colors = chairAsset.colors;
+  const materials = chairAsset.materials;
+
+    const colorOptions = document.querySelectorAll(".color-option");
+    colorOptions.forEach((colorOption) => {
+      colorOption.style.display = "flex";  
+      
+    // Check if the color option matches the selected body color
+    if (colorOption.dataset.color === selectedBodyColor) {
+      colorOption.classList.add("selected"); 
     } else {
-      modelOnScene.changeModelColor("metal_mat", "#d4c8a3");
+      colorOption.classList.remove("selected"); 
     }
+    colorOption.addEventListener("click", function () {
+      // Deselect all color options
+      document.querySelectorAll(".color-option").forEach((opt) => opt.classList.remove("selected"));
+      
+      // Mark the clicked one as selected
+      this.classList.add("selected");
 
-    option.addEventListener("click", function () {
-      colorOptions.forEach((opt) => opt.classList.remove("selected"));
-      const element = this;
+      // Update selectedBodyColor
+      selectedBodyColor = this.dataset.color;
 
-      element.classList.add("selected");
-      const newSelectedColor = element.dataset.color;
-
-      if (newSelectedColor !== selectedBodyColor) {
-
-        // Body color has changed
-        selectedBodyColor = newSelectedColor; // Update the new selected color
-        document.querySelector(".color-chosen").textContent =
-          element.dataset.name;
-          selectedFabricColor = "#d4c8a3";
-          selectedLegsColor = "#d4c8a3";
-          selectedLacesColor = "#d4c8a3";
-        modelOnScene.changeModelColor("metal_mat", selectedBodyColor);
-        modelOnScene.changeModelColor("fabric_mat",  selectedFabricColor);
-        modelOnScene.changeModelColor("laces_mat",  selectedLacesColor);
-        modelOnScene.changeModelColor("wood_mat", selectedLegsColor);
-
+      // Update the color-chosen text
+      document.querySelector(".color-chosen").textContent = this.dataset.name;
+      // Update model colors accordingly
+      selectedFabricColor = chairAsset.colors[0].color; // Set defaults for other parts
+      selectedLegsColor = chairAsset.colors[0].color;
+      selectedLacesColor = chairAsset.colors[0].color;
+      const partsC = chairAsset.parts.reduce((acc, part) => {
+        acc[part.id] = part.label;
+        return acc;
+      }, {});
+      if (partsC.body) {
+        modelOnScene.changeModelColor(materials.body, selectedBodyColor);
+      }
+      if (partsC.fabric) {
+        selectedFabricColor = colorsC[0].color;
+        modelOnScene.changeModelColor(materials.fabric, selectedFabricColor);
+      }
+      if (partsC.laces) {
+        selectedLacesColor = colorsC[0].color;
+        modelOnScene.changeModelColor(materials.laces, selectedLacesColor);
+      }
+      if (partsC.legs) {
+        selectedLegsColor = colorsC[0].color;
+        modelOnScene.changeModelColor(materials.legs, selectedLegsColor);
       }
     });
+
   });
+
+  // Update initially chosen color if any
+  document.querySelector(".color-chosen").textContent = document.querySelector(".color-option.selected")?.dataset.name || colors[0].name;
+
+ 
+  if (selectedBodyColor !== "") {
+    modelOnScene.changeModelColor(materials.body, selectedBodyColor);
+  } else {
+    
+    modelOnScene.changeModelColor(materials.body, colors[0].color);
+  }
 }
+
 
 function setupColorOptions(partType, selectedColor, defaultColor, partObjects) {
   const colorOptions = document.querySelectorAll(".color-option");
@@ -487,29 +605,30 @@ function setupColorOptions(partType, selectedColor, defaultColor, partObjects) {
 }
 
 function fabricClicked() {
-  $(".title-x .title").text("fabric");
+  $(".title-x .title").text(chairAsset.parts[1].label);
   activateAnimationFabricPart();
-  console.log(CAMERA);
-
+  $(".upper-btns, .chose-model").css("display", "none");
   clearColorOptionEventListeners();
   updateColorOptions(selectedBodyColor);
-  setupColorOptions("fabric", selectedFabricColor, "#d4c8a3", "fabric_mat");
+  setupColorOptions("fabric", selectedFabricColor, "#d4c8a3", chairAsset.materials.fabric);
 }
 
 function lacesClicked() {
-  $(".title-x .title").text("laces");
+  $(".title-x .title").text(chairAsset.parts[2].label);
+  $(".upper-btns, .chose-model").css("display", "none");
   activateAnimationLacesPart();
   clearColorOptionEventListeners();
   updateColorOptions(selectedBodyColor);
-  setupColorOptions("laces", selectedLacesColor, "#d4c8a3", "laces_mat");
+  setupColorOptions("laces", selectedLacesColor, "#d4c8a3", chairAsset.materials.laces);
 }
 
 function legsClicked() {
-  $(".title-x .title").text("legs");
+  $(".title-x .title").text(chairAsset.parts[3].label);
+  $(".upper-btns, .chose-model").css("display", "none");
   activateAnimationLegsPart();
   clearColorOptionEventListeners();
   updateColorOptions(selectedBodyColor);
-  setupColorOptions("legs", selectedLegsColor, "#d4c8a3", "wood_mat");
+  setupColorOptions("legs", selectedLegsColor, "#d4c8a3", chairAsset.materials.legs);
 }
 
 function handleImageDisplay(inputSelector, shouldDisplay) {
@@ -533,4 +652,11 @@ $(".right-btn").on("click", function () {
 });
 $(".chose-model").on("click", function () {
   window.location.href = 'index.html';
+});
+
+
+$(document).ready(function() {
+  if (chairAsset.parts.length <= 1) {  
+    $('.next-wrapper').css("display" , "none");
+  }
 });

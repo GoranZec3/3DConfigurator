@@ -13,6 +13,11 @@ let reticle;
 let renderer;
 let scene;
 let controller;
+let selectedModel = null;
+
+let rotating = false;  
+let rotationSpeed = 0.015;  
+
 
 const ORBIT_TARGET = new THREE.Vector3(0, Y_AXIS, 0);
 const HDRI_PATH = '/hdri/studio005small.hdr';
@@ -21,6 +26,8 @@ export function initScene(canvas, chairAsset) {
   CAMERA_POSITION = ($(window).width() < 768) ? chairAsset.cameraPosMobile : chairAsset.cameraPos;
 
   scene = new THREE.Scene();
+  sceneBackgroundSet(true);
+
   const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance", alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -60,12 +67,17 @@ export function initScene(canvas, chairAsset) {
   addReticleToScene();
 
   controller = renderer.xr.getController(0);
-  controller.addEventListener('select', onSelect);
+  // controller.addEventListener('select', onSelect);
+  controller.addEventListener('selectstart', onSelectStart);
+  controller.addEventListener('selectend', onSelectEnd);
+
   scene.add(controller);
 
   return { scene, camera, renderer, orbit };
 }
 
+
+//###########################
 function addReticleToScene() {
   const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
   const material = new THREE.MeshBasicMaterial();
@@ -75,27 +87,49 @@ function addReticleToScene() {
   scene.add(reticle);
 }
 
-
-let selectedModel = null;
-
 export function passModelToScene(model) {
   selectedModel = model;
 }
 
+export function sceneBackgroundSet(remove = false){
+  if(remove){ 
+    scene.background = new THREE.Color(BACKGROUND_COLOR);
+  }else{
+    scene.background = null;
+  }
+}
 
-function onSelect() {
+
+function onSelectEnd(event) {
+  rotating = false;
+}
+
+
+function onSelectStart(event){
   if (reticle.visible && selectedModel) {
     selectedModel.traverse((child) => {
       if (child.isMesh) {
-
         child.position.setFromMatrixPosition(reticle.matrix);
         child.quaternion.setFromRotationMatrix(reticle.matrix);
       }
     });
     selectedModel.visible = true;
+    
+    rotating = true;  
   }
+
+  rotating = true;
 }
 
+function rotateModel() {
+  if (rotating && selectedModel) {
+    selectedModel.traverse((child) => {
+      if (child.isMesh) {
+        child.rotation.y += rotationSpeed;  // Rotate around the Y-axis
+      }
+    });
+  }
+}
 
 let hitTestSource = null;
 let localSpace = null;
@@ -107,9 +141,24 @@ async function initializeHitTestSource() {
   hitTestSource = await session.requestHitTestSource({ space: viewerSpace });
   localSpace = await session.requestReferenceSpace("local");
   hitTestSourceInitialized = true;
+  //exit
   session.addEventListener("end", () => {
     hitTestSourceInitialized = false;
     hitTestSource = null;
+    selectedModel.traverse((child) => {
+      console.log(child);
+      
+      if (child.isMesh) {
+        // Reset position to default
+        child.position.set(0, 0, 0);
+        child.rotation.set(0, 0, 0);
+      }
+    });
+    scene.remove(reticle);
+    sceneBackgroundSet(true);
+    selectedModel.visible = true;  
+    $('.configurator-btn').click()
+
   });
 }
 
@@ -142,6 +191,8 @@ export function animate(scene, camera, renderer, mixers) {
         }
       }
     }
+
+    rotateModel(); 
 
     updateCameraAnimation();
     renderer.render(scene, camera);
