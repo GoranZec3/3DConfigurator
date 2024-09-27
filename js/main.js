@@ -656,5 +656,7 @@ $(".chose-model").on("click", function () {
 
 
 $(document).ready(function() {
-  $('.color-option').first().click();
+  if (chairAsset.parts.length <= 1) {  
+    $('.next-wrapper').css("display" , "none");
+  }
 });
